@@ -57,14 +57,6 @@ public class CellView: UIView {
         circle.layer.cornerRadius = 10
         circle.backgroundColor = UIColor.red
         circle.clipsToBounds = true
-        
-        
-        let darkBlur = UIBlurEffect(style: UIBlurEffectStyle.dark)
-        let blurView = UIVisualEffectView(effect: darkBlur)
-        
-        blurView.frame = circle.bounds
-        
-        circle.addSubview(blurView)
     }
     
     required public init(coder: NSCoder) {
