@@ -17,6 +17,8 @@ public class CellView: UIView {
     
     public var coordinates: CellCoordinates!
     
+    var circle = UIView()
+    
     public dynamic var alive = false
     public var shouldToggleState = false
     
@@ -35,18 +37,34 @@ public class CellView: UIView {
     public func setAlive(value: Bool){
         alive = value;
         if(alive){
-            layer.backgroundColor = UIColor.red.cgColor;
+            self.addSubview(circle)
+//            layer.backgroundColor = UIColor.red.cgColor;
         }else{
+            circle.removeFromSuperview()
             layer.backgroundColor = UIColor.white.cgColor;
         }
     }
     
-    override public init(frame: CGRect) {        super.init(frame: frame)
+    override public init(frame: CGRect) {
+        super.init(frame: frame)
         
-        // Init design
         layer.borderWidth = 1.0
         layer.borderColor = UIColor(white: 0.0, alpha: 0.03).cgColor
         layer.backgroundColor = UIColor.white.cgColor
+        
+        circle = UIView(frame: CGRect(x: 3, y: 3, width: frame.width - 6, height: frame.height - 6))
+        
+        circle.layer.cornerRadius = 10
+        circle.backgroundColor = UIColor.red
+        circle.clipsToBounds = true
+        
+        
+        let darkBlur = UIBlurEffect(style: UIBlurEffectStyle.dark)
+        let blurView = UIVisualEffectView(effect: darkBlur)
+        
+        blurView.frame = circle.bounds
+        
+        circle.addSubview(blurView)
     }
     
     required public init(coder: NSCoder) {

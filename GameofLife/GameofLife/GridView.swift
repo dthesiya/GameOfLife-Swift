@@ -10,64 +10,66 @@ import Foundation
 import UIKit
 
 public class GridView: UIView {
-    private var _gridWidth = 10
-    private var _gridHeight = 10
-    private var _cellViews: [CellView]
+    private var gridWidth = 10
+    private var gridHeight = 10
+    private var cellViews: [CellView]
     
-    public init(gridWidth: Int, gridHeight: Int, width: Int, height: Int) {
+    public init(gridWidth: Int, gridHeight: Int, width: Int, height: Int, minY: Float) {
         // Init values
-        _gridWidth = gridWidth
-        _gridHeight = gridHeight
+        self.gridWidth = gridWidth
+        self.gridHeight = gridHeight
         
-        _cellViews = Array(repeating: CellView(), count: _gridWidth * _gridHeight)
+        cellViews = Array(repeating: CellView(), count: gridWidth * gridHeight)
         
-        super.init(frame: CGRect(x: 0, y: 0, width: width, height: height))
-        _init(gridWidth: gridWidth, gridHeight: gridHeight)
+        super.init(frame: CGRect(x: 0, y: Int(minY), width: width, height: height))
+        _init(gridWidth: gridWidth, gridHeight: gridHeight, cellWidth:Float(width/gridWidth), minY: minY)
     }
     
     required public init(coder: NSCoder) {
         
-        _cellViews = Array(repeating: CellView(), count: _gridWidth * _gridHeight)
+        cellViews = Array(repeating: CellView(), count: gridWidth * gridHeight)
         
         super.init(coder: coder)!
-        _init(gridWidth: _gridWidth, gridHeight: _gridHeight)
+        _init(gridWidth: gridWidth, gridHeight: gridHeight, cellWidth: 20, minY: 30)
     }
     
-    private func _init(gridWidth: Int, gridHeight: Int) {
+    private func _init(gridWidth: Int, gridHeight: Int, cellWidth: Float, minY: Float) {
         
         // Fill the matrix with views
         for i in 0 ..< gridHeight {
             for j in 0 ..< gridWidth {
-                let cellView = CellView(frame: CGRect.init())
+                let x = Float(j) * cellWidth
+                let y = Float(i) * cellWidth + minY
+                let cellView = CellView(frame: CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(cellWidth), height: CGFloat(cellWidth)))
                 cellView.coordinates = (x: i, y: j)
                 addSubview(cellView)
                 
-                _cellViews[(i * gridWidth) + j] = cellView
+                cellViews[(i * gridWidth) + j] = cellView
             }
         }
     }
     
     public func toggleCell(at: CellCoordinates) {
         // Toggle the state of the model
-        let cell = _cellViews[(at.x * _gridWidth) + at.y]
+        let cell = cellViews[(at.x * gridWidth) + at.y]
         cell.setAlive(value: !cell.isAlive())
     }
     
     public func clear() {
-        for i in 0 ..< _gridHeight {
-            for j in 0 ..< _gridWidth {
-                let cellView = _cellViews[(i * _gridWidth) + j]
+        for i in 0 ..< gridHeight {
+            for j in 0 ..< gridWidth {
+                let cellView = cellViews[(i * gridWidth) + j]
                 cellView.setAlive(value: false)
             }
         }
     }
 
-    public func step() {
+    public func next() {
         // Find the tiles that must be toggled and mark them
-        for i in 0 ..< _gridHeight {
-            for j in 0 ..< _gridWidth {
+        for i in 0 ..< gridHeight {
+            for j in 0 ..< gridWidth {
                 let neighbours = getAliveNeighbours(coordinates: (x: i, y: j))
-                let cellView = _cellViews[(i * _gridWidth) + j]
+                let cellView = cellViews[(i * gridWidth) + j]
                 
                 if cellView.isAlive() {
                     if neighbours.count < 2 || neighbours.count > 3 {
@@ -80,9 +82,9 @@ public class GridView: UIView {
             }
         }
         
-        for i in 0 ..< _gridHeight {
-            for j in 0 ..< _gridWidth {
-                let cellView = _cellViews[(i * _gridWidth) + j]
+        for i in 0 ..< gridHeight {
+            for j in 0 ..< gridWidth {
+                let cellView = cellViews[(i * gridWidth) + j]
                 
                 if cellView.shouldToggleState {
                     cellView.setAlive(value: !cellView.isAlive())
@@ -94,17 +96,17 @@ public class GridView: UIView {
     
     public func getAliveNeighbours(coordinates: CellCoordinates) -> [CellView] {
         var neighbours = [CellView]()
-        let neighboursDelta = [(1, 0), (0, 1), (-1, 0), (0, -1),
+        let neighboursArr = [(1, 0), (0, 1), (-1, 0), (0, -1),
                                (1, 1), (-1, 1), (-1, -1), (1, -1)]
         
-        for (deltaX, deltaY) in neighboursDelta {
-            let x = coordinates.x + deltaX
-            let y = coordinates.y + deltaY
+        for (arrX, arrY) in neighboursArr {
+            let x = coordinates.x + arrX
+            let y = coordinates.y + arrY
             
-            if x < 0 || x >= _gridHeight { continue }
-            if y < 0 || y >= _gridWidth { continue }
+            if x < 0 || x >= gridHeight { continue }
+            if y < 0 || y >= gridWidth { continue }
             
-            let cellView = _cellViews[(x * _gridWidth) + y]
+            let cellView = cellViews[(x * gridWidth) + y]
             if(cellView.isAlive()){
                 neighbours.append(cellView)
             }
@@ -119,9 +121,9 @@ public class GridView: UIView {
     }
     
     private func _layoutTiles() {
-        for i in 0 ..< _gridHeight {
-            for j in 0 ..< _gridWidth {
-                let cellView = _cellViews[(i * _gridWidth) + j]
+        for i in 0 ..< gridHeight {
+            for j in 0 ..< gridWidth {
+                let cellView = cellViews[(i * gridWidth) + j]
                 cellView.frame = cellFrame(coordinates: (x: i, y: j))
             }
         }
@@ -129,8 +131,8 @@ public class GridView: UIView {
     
     private var cellSize: CGSize {
         return CGSize(
-            width: bounds.width / CGFloat(_gridWidth),
-            height: bounds.height / CGFloat(_gridHeight)
+            width: bounds.width / CGFloat(gridWidth),
+            height: bounds.height / CGFloat(gridHeight)
         )
     }
     
